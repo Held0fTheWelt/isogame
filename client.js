@@ -1,32 +1,6 @@
 var Client = IgeClass.extend({
 	classId: 'Client',
 
-    setFocus: function(focus){
-        var self = this;
-
-        self.player.stateMachine.setFocus(0);
-        self.ai1.stateMachine.setFocus(0);
-        self.ai2.stateMachine.setFocus(0);
-        self.ai3.stateMachine.setFocus(0);
-        switch(focus){
-            case 0:
-                self.player.stateMachine.setFocus(1);
-                break;
-            case 1:
-
-                self.ai1.stateMachine.setFocus(1);
-                break;
-            case 2:
-
-                self.ai2.stateMachine.setFocus(1);
-                break;
-            case 3:
-
-                self.ai3.stateMachine.setFocus(1);
-                break;
-        }
-    },
-
 	init: function () {
 		ige.showStats(1);
 
@@ -34,8 +8,6 @@ var Client = IgeClass.extend({
 		var self = this;
         self.gameTexture = [];
 
-       // self.gameTexture[0] = new IgeSpriteSheet('green.jpg');
-        // The closed lobby
         self.gameTexture[0] = new IgeTexture('green.png');
         self.gameTexture[1] = new IgeTexture('enter.jpg');
         self.gameTexture[2] = new IgeTexture('exit.jpg');
@@ -59,7 +31,7 @@ var Client = IgeClass.extend({
                     .id('objectScene')
                     .depth(0)
                     .drawBounds(false)
-                    .drawBoundsData(false)
+                    .drawBoundsData(false);
                   //  .mount(self.mainScene);
 
                 self.uiScene = new IgeScene2d()
@@ -89,7 +61,7 @@ var Client = IgeClass.extend({
                 self.stateMachine.addState("Game");
                 self.stateMachine.addIOScheme("Menu", "Enter", "Game");
                 self.stateMachine.addIOScheme("Game", "Exit", "Menu");
-                self.stateMachine.setCurrentState("Menu");
+                self.stateMachine.setCurrentState("Game");
 
                 self.createMenuScene();
                 self.createGameScene();
@@ -100,7 +72,9 @@ var Client = IgeClass.extend({
 			}
 		});
 	},
-
+    /**
+     * Switches the game state
+     */
     doStateSwitch: function(){
         var self = this;
 
@@ -111,15 +85,54 @@ var Client = IgeClass.extend({
         }
     },
 
+    /**
+     * switches entities focus
+     * @param focus the entity that gains focus
+     */
+    setFocus: function(focus){
+        var self = this;
+
+        self.player.stateMachine.setFocus(0);
+        self.ai1.stateMachine.setFocus(0);
+        self.ai2.stateMachine.setFocus(0);
+        self.ai3.stateMachine.setFocus(0);
+        switch(focus){
+            case 0:
+                self.player.stateMachine.setFocus(1);
+                self.player.entity.switchMouseListener(true);
+                break;
+            case 1:
+
+                self.ai1.stateMachine.setFocus(1);
+                self.ai1.entity.switchMouseListener(true);
+                break;
+            case 2:
+
+                self.ai2.stateMachine.setFocus(1);
+                self.ai2.entity.switchMouseListener(true);
+                break;
+            case 3:
+
+                self.ai3.stateMachine.setFocus(1);
+                self.ai3.entity.switchMouseListener(true);
+                break;
+        }
+    },
+
+    /**
+     * creates the menu
+     */
     createMenuScene: function(){
             var self = this;
+
+////// Basic menu setup ////////
 
             self.menu = new IgeScene2d()
                 .id('menu')
                 .depth(0)
                 .drawBounds(false)
-                .drawBoundsData(false)
-                .mount(self.mainScene);
+                .drawBoundsData(false);
+               // .mount(self.mainScene);
 
             self.enterButton = new GameElement()
                 .id('enter')
@@ -142,6 +155,8 @@ var Client = IgeClass.extend({
      */
     createGameScene: function(){
         var self = this;
+
+////// Basic scene setup ////////
 
         self.exitButton = new GameElement()
             .id('exit')
@@ -188,12 +203,14 @@ var Client = IgeClass.extend({
             this.drawBoundsData(false);
         };
 
+////////// Player Character
+
         // Create the 3d container that the player
         // entity will be mounted to
         self.player = new CharacterContainer(1)
             .id('player')
-            .addComponent(PlayerComponent)
             .addComponent(StateMachineComponent)
+            .addComponent(EntityComponent)
             .isometric(true)
             .mouseOver(overFunc)
             .mouseOut(outFunc)
@@ -207,13 +224,17 @@ var Client = IgeClass.extend({
             .mount(self.objectScene);
 
         self.player.stateMachine.setFocus(1);
+
+
+////////// AI Testcase /////////
+
+
         // Create the 3d container that the player
         // entity will be mounted to
         self.ai1 = new CharacterContainer(2)
             .id('ai1')
-            .addComponent(PlayerComponent)
             .addComponent(StateMachineComponent)
-            .addComponent(CharacterBehaviour)
+            .addComponent(EntityComponent)
             .isometric(true)
             .mouseOver(overFunc)
             .mouseOut(outFunc)
@@ -246,15 +267,16 @@ var Client = IgeClass.extend({
         self.ai1.stateMachine.switchStates("intersect");
         // show us the currentState
         ige.log("AI1 current state: "+self.ai1.stateMachine.getCurrentState());
-        // add the stateMachine to the behaviours
-        self.ai1.behaviour.addStateMachine(self.ai1.stateMachine);
+
+
+// Second and Third AI ///////
 
         // Create the 3d container that the player
         // entity will be mounted to
         self.ai2 = new CharacterContainer(2)
             .id('ai2')
-            .addComponent(PlayerComponent)
             .addComponent(StateMachineComponent)
+            .addComponent(EntityComponent)
             .isometric(true)
             .mouseOver(overFunc)
             .mouseOut(outFunc)
@@ -271,8 +293,8 @@ var Client = IgeClass.extend({
         // entity will be mounted to
         self.ai3 = new CharacterContainer(2)
             .id('ai3')
-            .addComponent(PlayerComponent)
             .addComponent(StateMachineComponent)
+            .addComponent(EntityComponent)
             .isometric(true)
             .mouseOver(overFunc)
             .mouseOut(outFunc)
@@ -282,10 +304,11 @@ var Client = IgeClass.extend({
                 self.setFocus(3);
             })
             .depth(2)
-
             .mount(self.objectScene);
 
-        // Create the Lobbyman doors
+
+//////////////////// Fields /////////////////////
+
         self.field1 = new GameElement()
             .id('field1')
 
@@ -297,8 +320,6 @@ var Client = IgeClass.extend({
             .translateTo(0, 20, 0)
             .mount(self.tileMap1);
 
-
-        // Create the Lobbyman doors
         self.field2 = new GameElement()
             .id('field2')
 
@@ -310,7 +331,6 @@ var Client = IgeClass.extend({
             .translateTo(-118, 320, 0)
             .mount(self.tileMap1);
 
-        // Create the Lobbyman doors
         self.field3 = new GameElement()
             .id('field3')
 
@@ -322,6 +342,8 @@ var Client = IgeClass.extend({
             .translateTo(200, 200, 0)
             .mount(self.tileMap1);
 
+
+////////////////// UI Testcase /////////////////
 
         // Create a UI entity so we can test if clicking the entity will stop
         // event propagation down to moving the player. If it's working correctly

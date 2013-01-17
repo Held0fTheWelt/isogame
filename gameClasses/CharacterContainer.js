@@ -27,9 +27,7 @@ var CharacterContainer = IgeEntity.extend({
 	 */
 	walkTo: function (x, y) {
 		var self = this;
-        if(self.stateMachine.getFocus() == 0){
-            return this;
-        }
+
 		var	distX = x - this.translate().x(),
 			distY = y - this.translate().y(),
 			distance = Math.distance(
